@@ -92,10 +92,11 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
 
-  # RabbitMQ - expose management UI in development (override to add port mapping)
+  # RabbitMQ - expose ports for testing and local development
   rabbitmq:
     ports:
-      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+      - "5672:5672"  # AMQP port for client connections (always 5672)
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # Management UI port
 
   # Mock OAuth Service (development only - addition, not in prod)
   mock-oauth:

@@ -31,7 +31,7 @@ class Package(Base, TimestampMixin):
         default=PackageStatus.PENDING,
         index=True
     )
-    metadata: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON content as text (package.json metadata)
+    package_metadata: Mapped[Optional[str]] = mapped_column("metadata", Text, nullable=True)  # JSON content as text (package.json metadata)
     fetched_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     # Unique constraint on name + version

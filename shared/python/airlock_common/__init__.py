@@ -20,6 +20,24 @@ from .db.models import (
     LicenseAllowlist,
 )
 
+# Messaging exports (lazy import to avoid circular dependencies)
+try:
+    from .messaging.connection import get_rabbitmq_connection, RabbitMQConnection
+    from .messaging.exchanges import (
+        PACKAGE_EVENTS_EXCHANGE,
+        WORKFLOW_EVENTS_EXCHANGE,
+        CHECK_EVENTS_EXCHANGE,
+        DLX_EXCHANGE,
+    )
+except ImportError:
+    # pika may not be installed
+    get_rabbitmq_connection = None
+    RabbitMQConnection = None
+    PACKAGE_EVENTS_EXCHANGE = None
+    WORKFLOW_EVENTS_EXCHANGE = None
+    CHECK_EVENTS_EXCHANGE = None
+    DLX_EXCHANGE = None
+
 __all__ = [
     "get_db",
     "Database",
@@ -34,5 +52,11 @@ __all__ = [
     "APIKey",
     "PackageUsage",
     "LicenseAllowlist",
+    "get_rabbitmq_connection",
+    "RabbitMQConnection",
+    "PACKAGE_EVENTS_EXCHANGE",
+    "WORKFLOW_EVENTS_EXCHANGE",
+    "CHECK_EVENTS_EXCHANGE",
+    "DLX_EXCHANGE",
 ]
 

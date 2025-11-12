@@ -1,6 +1,7 @@
 """
 Package Request model
 """
+from typing import List
 from sqlalchemy import String, ForeignKey, Integer, Enum, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
