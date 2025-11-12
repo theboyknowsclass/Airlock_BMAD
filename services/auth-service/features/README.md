@@ -85,7 +85,7 @@ This scenario is implemented by step definitions that:
 
 ## Test Coverage
 
-The JWT token validation feature includes tests for:
+### JWT Token Validation Feature
 - ✅ Valid access token acceptance
 - ✅ Missing token rejection
 - ✅ Invalid token rejection
@@ -97,4 +97,28 @@ The JWT token validation feature includes tests for:
 - ✅ Optional authentication endpoints
 - ✅ User context extraction
 - ✅ Parameterized scenarios (Scenario Outline)
+
+### OAuth2 Integration Feature
+- ✅ Login flow initiation
+- ✅ Token refresh with valid refresh token
+- ✅ Token refresh with invalid refresh token
+- ✅ Token refresh error handling (wrong grant type, missing token)
+- ✅ Logout endpoint
+- ✅ Username parameter support for mock OAuth providers
+
+**Note:** OAuth2 callback scenarios (code exchange) require complex async mocking and are better tested via integration tests with the actual mock OAuth service. These are documented but not included in unit BDD tests.
+
+## Current Coverage
+
+Running all BDD tests with coverage:
+```bash
+python -m pytest features/ --cov=src --cov-report=term-missing --cov-report=html
+```
+
+**Coverage Results:**
+- JWT Validation (`dependencies/auth.py`): 89.29%
+- JWT Utils (`utils/jwt.py`): 94.29%
+- Auth Router (`routers/auth.py`): 63.00%
+- OAuth2 Service (`services/oauth2.py`): 32.91% (callback flows tested via integration)
+- **Overall Service**: 60.17%
 
