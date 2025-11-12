@@ -19,15 +19,11 @@ class Settings(BaseSettings):
     OAUTH2_REDIRECT_URI: str = os.getenv("OAUTH2_REDIRECT_URI", "http://localhost:8001/api/v1/auth/callback")
     FRONTEND_CALLBACK_URI: str = os.getenv("FRONTEND_CALLBACK_URI", "http://localhost:3000/auth/callback")
     
-    # ADFS Configuration (Production)
-    ADFS_AUTHORIZATION_URL: str = os.getenv("ADFS_AUTHORIZATION_URL", "")
-    ADFS_TOKEN_URL: str = os.getenv("ADFS_TOKEN_URL", "")
-    ADFS_USERINFO_URL: str = os.getenv("ADFS_USERINFO_URL", "")
-    ADFS_ISSUER: str = os.getenv("ADFS_ISSUER", "")
-    
-    # Mock OAuth Configuration (Development)
-    MOCK_OAUTH_URL: str = os.getenv("MOCK_OAUTH_URL", "http://mock-oauth:9000")
-    USE_MOCK_OAUTH: bool = os.getenv("USE_MOCK_OAUTH", "true").lower() == "true"
+    # OAuth2 Provider URLs (configured via environment variables)
+    OAUTH2_AUTHORIZATION_URL: str = os.getenv("OAUTH2_AUTHORIZATION_URL", "")
+    OAUTH2_TOKEN_URL: str = os.getenv("OAUTH2_TOKEN_URL", "")
+    OAUTH2_USERINFO_URL: str = os.getenv("OAUTH2_USERINFO_URL", "")
+    OAUTH2_ISSUER: str = os.getenv("OAUTH2_ISSUER", "")
     
     # JWT Configuration
     JWT_SECRET_KEY: str = os.getenv(

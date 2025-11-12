@@ -5,93 +5,59 @@ version: '3.8'
 # This file merges with docker-compose.prod.yml, adding/overriding development-specific settings only
 
 services:
-  # Override services for development with hot reload volumes and DEBUG logging
+  # Override services for development with hot reload volumes
+  # LOG_LEVEL is set via .env.dev and used by all services in docker-compose.prod.yml
   # Only specify what's different from production
   
   api-gateway:
     volumes:
       - ./services/api-gateway/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   auth-service:
     volumes:
       - ./services/auth-service/src:/app/src
     ports:
       - "${AUTH_SERVICE_PORT:-8001}:8000"
-    environment:
-      LOG_LEVEL: DEBUG
-      USE_MOCK_OAUTH: "true"
-      MOCK_OAUTH_URL: "http://mock-oauth:9000"
-      OAUTH2_CLIENT_ID: "airlock-client"
-      OAUTH2_CLIENT_SECRET: ""
-      OAUTH2_REDIRECT_URI: "http://localhost:8001/api/v1/auth/callback"
-      FRONTEND_CALLBACK_URI: "http://localhost:3000/auth/callback"
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-key-change-in-production-123456789012345678901234567890}
-      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
-      JWT_ISSUER: "airlock-auth-service"
-      ACCESS_TOKEN_EXPIRY_MINUTES: "15"
-      REFRESH_TOKEN_EXPIRY_DAYS: "7"
 
   user-service:
     volumes:
       - ./services/user-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   api-key-service:
     volumes:
       - ./services/api-key-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   submission-service:
     volumes:
       - ./services/submission-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   workflow-service:
     volumes:
       - ./services/workflow-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   trivy-agent:
     volumes:
       - ./services/agents/trivy-agent/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   license-agent:
     volumes:
       - ./services/agents/license-agent/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   review-agent:
     volumes:
       - ./services/agents/review-agent/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   storage-service:
     volumes:
       - ./services/storage-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   registry-service:
     volumes:
       - ./services/registry-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   tracking-service:
     volumes:
       - ./services/tracking-service/src:/app/src
-    environment:
-      LOG_LEVEL: DEBUG
 
   frontend:
     volumes:

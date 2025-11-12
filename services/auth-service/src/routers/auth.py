@@ -38,19 +38,19 @@ class LoginResponse(BaseModel):
 
 @router.get("/login")
 async def login(
-    username: Optional[str] = Query(None, description="Username for mock OAuth (development only)"),
+    username: Optional[str] = Query(None, description="Username parameter (for mock OAuth providers)"),
     state: Optional[str] = Query(None, description="State parameter for CSRF protection"),
 ):
     """
     Initiate OAuth2 login flow
-    Redirects to ADFS (or mock OAuth) for authentication
+    Redirects to OAuth provider for authentication
     """
     try:
         # Get authorization URL
         auth_url, state_token = oauth2_client.get_authorization_url(state=state)
         
-        # For mock OAuth, append username if provided
-        if settings.USE_MOCK_OAUTH and username:
+        # Append username parameter if provided (useful for mock OAuth providers)
+        if username:
             separator = "&" if "?" in auth_url else "?"
             auth_url = f"{auth_url}{separator}username={username}"
         

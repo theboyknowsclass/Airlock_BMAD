@@ -1,5 +1,5 @@
 """
-OAuth2 client service for ADFS and Mock OAuth integration
+OAuth2 client service for OAuth provider integration
 """
 import secrets
 import logging
@@ -13,25 +13,31 @@ logger = logging.getLogger(__name__)
 
 
 class OAuth2Client:
-    """OAuth2 client for ADFS and Mock OAuth"""
+    """OAuth2 client for OAuth providers (ADFS, Mock OAuth, etc.)"""
     
     def __init__(self):
         """Initialize OAuth2 client"""
-        self.use_mock = settings.USE_MOCK_OAUTH
-        if self.use_mock:
-            self.authorization_url = f"{settings.MOCK_OAUTH_URL}/oauth/authorize"
-            self.token_url = f"{settings.MOCK_OAUTH_URL}/oauth/token"
-            self.userinfo_url = f"{settings.MOCK_OAUTH_URL}/oauth/userinfo"
-            self.issuer = settings.MOCK_OAUTH_URL
-        else:
-            self.authorization_url = settings.ADFS_AUTHORIZATION_URL
-            self.token_url = settings.ADFS_TOKEN_URL
-            self.userinfo_url = settings.ADFS_USERINFO_URL
-            self.issuer = settings.ADFS_ISSUER
+        # OAuth2 provider URLs come from environment variables
+        self.authorization_url = settings.OAUTH2_AUTHORIZATION_URL
+        self.token_url = settings.OAUTH2_TOKEN_URL
+        self.userinfo_url = settings.OAUTH2_USERINFO_URL
+        self.issuer = settings.OAUTH2_ISSUER
         
         self.client_id = settings.OAUTH2_CLIENT_ID
         self.client_secret = settings.OAUTH2_CLIENT_SECRET
         self.redirect_uri = settings.OAUTH2_REDIRECT_URI
+        
+        # Validate required configuration
+        if not self.authorization_url:
+            raise ValueError("OAUTH2_AUTHORIZATION_URL environment variable is required")
+        if not self.token_url:
+            raise ValueError("OAUTH2_TOKEN_URL environment variable is required")
+        if not self.userinfo_url:
+            raise ValueError("OAUTH2_USERINFO_URL environment variable is required")
+        if not self.client_id:
+            raise ValueError("OAUTH2_CLIENT_ID environment variable is required")
+        if not self.redirect_uri:
+            raise ValueError("OAUTH2_REDIRECT_URI environment variable is required")
     
     def get_authorization_url(self, state: Optional[str] = None) -> tuple[str, str]:
         """
@@ -55,13 +61,6 @@ class OAuth2Client:
             "scope": "openid profile email",
             "state": state_token,
         }
-        
-        # For mock OAuth, we need to add username parameter
-        # In production, this would be handled by ADFS login page
-        if self.use_mock:
-            # In production, this would redirect to ADFS login
-            # For now, we'll let the client handle username selection
-            pass
         
         url = f"{self.authorization_url}?{urlencode(params)}"
         return url, state_token
@@ -87,7 +86,7 @@ class OAuth2Client:
                 "client_id": self.client_id,
             }
             
-            # Add client_secret if provided (for production ADFS)
+            # Add client_secret if provided
             if self.client_secret:
                 data["client_secret"] = self.client_secret
             
@@ -163,7 +162,7 @@ class OAuth2Client:
                 "refresh_token": refresh_token,
             }
             
-            # Add client_secret if provided (for production ADFS)
+            # Add client_secret if provided
             if self.client_secret:
                 data["client_secret"] = self.client_secret
             
