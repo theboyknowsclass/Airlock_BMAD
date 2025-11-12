@@ -1,0 +1,137 @@
+version: '3.8'
+
+# Development configuration - overrides and additions ONLY
+# Usage: docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml --env-file .env.dev up
+# This file merges with docker-compose.prod.yml, adding/overriding development-specific settings only
+
+services:
+  # Override services for development with hot reload volumes and DEBUG logging
+  # Only specify what's different from production
+  
+  api-gateway:
+    volumes:
+      - ./services/api-gateway/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  auth-service:
+    volumes:
+      - ./services/auth-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  user-service:
+    volumes:
+      - ./services/user-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  api-key-service:
+    volumes:
+      - ./services/api-key-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  submission-service:
+    volumes:
+      - ./services/submission-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  workflow-service:
+    volumes:
+      - ./services/workflow-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  trivy-agent:
+    volumes:
+      - ./services/agents/trivy-agent/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  license-agent:
+    volumes:
+      - ./services/agents/license-agent/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  review-agent:
+    volumes:
+      - ./services/agents/review-agent/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  storage-service:
+    volumes:
+      - ./services/storage-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  registry-service:
+    volumes:
+      - ./services/registry-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  tracking-service:
+    volumes:
+      - ./services/tracking-service/src:/app/src
+    environment:
+      LOG_LEVEL: DEBUG
+
+  frontend:
+    volumes:
+      - ./frontend/src:/app/src
+      - /app/node_modules
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+
+  # RabbitMQ - expose management UI in development (override to add port mapping)
+  rabbitmq:
+    ports:
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+
+  # Mock OAuth Service (development only - addition, not in prod)
+  mock-oauth:
+    build:
+      context: ./mock-services/mock-oauth
+      dockerfile: Dockerfile
+    container_name: airlock-mock-oauth
+    ports:
+      - "${MOCK_OAUTH_PORT}:9000"
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      ACCESS_TOKEN_EXPIRY_MINUTES: ${ACCESS_TOKEN_EXPIRY_MINUTES}
+      REFRESH_TOKEN_EXPIRY_DAYS: ${REFRESH_TOKEN_EXPIRY_DAYS}
+      LOG_LEVEL: DEBUG
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - airlock-network
+
+  # pgAdmin (development only - addition, not in prod)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: airlock-pgadmin
+    ports:
+      - "${PGADMIN_PORT}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - airlock-network
+
+volumes:
+  pgadmin_data:

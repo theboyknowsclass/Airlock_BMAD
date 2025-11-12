@@ -45,7 +45,7 @@ So that I have a clear foundation for implementing all services.
 - `shared/` directory for shared code
 - `tests/` directory for integration/E2E tests
 - `docs/` directory for documentation
-- `.env.example` file with environment variable templates
+- `.env.dev` file with development environment variables (dev-only variables are commented)
 - `README.md` with project overview
 
 **And** All service directories have placeholder `Dockerfile` and `requirements.txt` (or `package.json` for frontend)

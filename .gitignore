@@ -38,8 +38,6 @@ dist-ssr/
 .env
 .env.local
 .env.prod
-.env.dev
-.env.*.local
 
 # IDE
 .vscode/

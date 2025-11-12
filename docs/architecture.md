@@ -294,7 +294,7 @@ Airlock is architected as a microservices-based, event-driven system using FastA
 ```
 airlock/
 ├── docker-compose.yml          # Local development orchestration
-├── .env.example                # Environment variables template
+├── .env.dev                     # Development environment variables (dev-only variables commented)
 ├── README.md
 │
 ├── services/

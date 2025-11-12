@@ -42,13 +42,59 @@ Airlock is a gated package manager designed to prevent supply chain attacks in s
 ### Development Setup
 
 1. **Project Structure:** ✅ Story 1.1 Complete
-2. **Docker Compose:** ⏳ Story 1.2 In Progress
+2. **Docker Compose:** ✅ Story 1.2 Complete
 3. **Database Setup:** ⏳ Story 1.3 Pending
 4. **RabbitMQ Setup:** ⏳ Story 1.4 Pending
 5. **Service Scaffolding:** ⏳ Story 1.5 Pending
 6. **Frontend Setup:** ⏳ Story 1.6 Pending
 7. **Mock OAuth:** ⏳ Story 1.7 Pending
 8. **Shared Libraries:** ⏳ Story 1.8 Pending
+
+### Running the Application
+
+**Development:**
+```powershell
+# Start all services (production + development overrides)
+.\docker-compose-dev.ps1 up
+
+# Start in detached mode
+.\docker-compose-dev.ps1 up -Detached
+
+# Build and start
+.\docker-compose-dev.ps1 up -Build
+
+# View logs
+.\docker-compose-dev.ps1 logs
+
+# Stop services
+.\docker-compose-dev.ps1 down
+
+# Rebuild services (after code changes)
+.\docker-compose-rebuild.ps1              # Rebuild all services
+.\docker-compose-rebuild.ps1 api-gateway  # Rebuild specific service
+.\docker-compose-rebuild.ps1 -NoCache     # Rebuild all without cache
+```
+
+**Production:**
+```powershell
+# Start all services
+.\docker-compose-prod.ps1 up
+
+# Start in detached mode
+.\docker-compose-prod.ps1 up -Detached
+
+# Stop services
+.\docker-compose-prod.ps1 down
+```
+
+**Note:** The development script runs both `docker-compose.prod.yml` and `docker-compose.dev.yml` together, with dev file providing only overrides and additions (no duplication).
+
+**Development Tools:**
+- **RabbitMQ Management UI:** http://localhost:15672 (credentials from .env.dev)
+- **pgAdmin:** http://localhost:5050 
+  - Email: `admin@airlock.dev` (from .env.dev)
+  - Password: `admin` (from .env.dev)
+  - To connect to PostgreSQL: Host: `postgres`, Port: `5432`, Database: `${POSTGRES_DB}`, Username: `${POSTGRES_USER}`, Password: `${POSTGRES_PASSWORD}`
 
 ## Documentation
 
