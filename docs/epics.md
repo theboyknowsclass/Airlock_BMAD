@@ -20,6 +20,7 @@ This document provides the complete epic and story breakdown for Airlock, decomp
 6. **Package Tracking & Lock-Down** - Package usage tracking and version control
 7. **External Integrations** - Artifact storage and registry integrations
 8. **Frontend Application** - User-facing web interface
+9. **License Management** - License allowlist management for administrators
 
 ---
 
@@ -131,6 +132,7 @@ So that I can store application data from the start.
 - Audit Logs (id, user_id, action, resource_type, resource_id, details, timestamp)
 - API Keys (id, key_hash, scopes, permissions, created_at, expires_at)
 - Package Usage (id, package_request_id, project_name, created_at) - tracks which projects use approved packages
+- License Allowlist (id, license_identifier, license_name, description, is_active, created_by, created_at, updated_at) - approved licenses for validation
 
 **And** Database connection is configurable via environment variables
 
@@ -146,6 +148,7 @@ So that I can store application data from the start.
 - Package Requests table stores individual dependency requests (one per dependency from package-lock.json)
 - Packages table stores fetched package data (from NPM registry)
 - Package Usage links approved package requests to projects
+- License Allowlist stores approved SPDX license identifiers for license validation
 
 ---
 
@@ -747,7 +750,6 @@ So that I can enable/disable checks and adjust settings.
 **Then** I can view all available checks
 **And** I can enable/disable checks
 **And** I can configure check settings (e.g., severity thresholds for Trivy)
-**And** I can update license allowlist
 **And** Configuration changes are persisted
 **And** Configuration is used by check agents
 
@@ -757,8 +759,8 @@ So that I can enable/disable checks and adjust settings.
 - Implement check configuration endpoints
 - Store configuration in database
 - Support check-specific settings
-- Manage license allowlist
 - Apply configuration to check execution
+- Note: License allowlist management is handled in Epic 9 (License Management)
 
 ---
 
@@ -1235,7 +1237,7 @@ So that I can manage the system without using APIs directly.
 **And** I can view audit logs
 **And** All admin functions are accessible
 
-**Prerequisites:** Story 8.1, Story 2.4, Story 4.4, Story 7.3
+**Prerequisites:** Story 8.1, Story 2.4, Story 4.4, Story 7.3, Story 9.2
 
 **Technical Notes:**
 - Implement admin configuration interface
@@ -1320,10 +1322,167 @@ So that tests serve as living documentation and ensure quality.
 
 ---
 
+## Epic 9: License Management
+
+**Goal:** Provide comprehensive license allowlist management capabilities for administrators to configure and maintain approved licenses for package validation.
+
+### Story 9.1: License Allowlist Backend API
+
+As an administrator,
+I want to manage the license allowlist through API endpoints,
+So that I can add, update, and remove approved licenses programmatically.
+
+**Acceptance Criteria:**
+
+**Given** I am an authenticated admin user
+**When** I access license allowlist endpoints
+**Then** I can:
+- `GET /api/v1/licenses` - List all licenses in allowlist (with filtering and pagination)
+- `GET /api/v1/licenses/{license_id}` - Get license details
+- `POST /api/v1/licenses` - Add new license to allowlist
+- `PUT /api/v1/licenses/{license_id}` - Update existing license
+- `DELETE /api/v1/licenses/{license_id}` - Remove license from allowlist (soft delete via is_active flag)
+- `GET /api/v1/licenses/search?q={query}` - Search licenses by identifier or name
+
+**And** License data includes:
+- `license_identifier` (SPDX identifier, e.g., "MIT", "Apache-2.0", "ISC")
+- `license_name` (human-readable name, e.g., "MIT License")
+- `description` (optional description)
+- `is_active` (boolean flag for soft delete)
+- `created_by` (user ID who added the license)
+- `created_at`, `updated_at` timestamps
+
+**And** All operations require admin role
+**And** All operations are logged in audit logs
+**And** License identifier must be valid SPDX identifier
+**And** Duplicate license identifiers are prevented
+**And** API returns appropriate error messages for invalid requests
+
+**Prerequisites:** Story 1.3, Story 2.3
+
+**Technical Notes:**
+- Implement license management service in appropriate microservice (could be part of workflow-service or separate config-service)
+- Use License Allowlist table from database schema
+- Validate SPDX license identifiers
+- Implement soft delete (is_active flag) instead of hard delete
+- Add audit logging for all license management operations
+- Support pagination and filtering for list endpoint
+- Return proper HTTP status codes (200, 201, 400, 404, 403)
+
+---
+
+### Story 9.2: License Allowlist Frontend UI
+
+As an administrator,
+I want to manage the license allowlist through a web interface,
+So that I can easily add, edit, and remove approved licenses.
+
+**Acceptance Criteria:**
+
+**Given** I am a logged-in admin
+**When** I access the license management page
+**Then** I can view a list of all licenses in the allowlist
+**And** I can search licenses by identifier or name
+**And** I can filter licenses by active/inactive status
+**And** I can add a new license with:
+- License identifier (SPDX format, e.g., "MIT", "Apache-2.0")
+- License name (human-readable)
+- Description (optional)
+- Active status toggle
+**And** I can edit existing licenses
+**And** I can deactivate licenses (soft delete)
+**And** I can reactivate deactivated licenses
+**And** Form validation prevents invalid SPDX identifiers
+**And** Duplicate license identifiers are prevented
+**And** Success/error messages are displayed clearly
+**And** UI is accessible (keyboard navigable, screen reader friendly)
+
+**Prerequisites:** Story 8.1, Story 9.1
+
+**Technical Notes:**
+- Implement license management page in frontend
+- Use React Query for data fetching and mutations
+- Use React Hook Form for form validation
+- Validate SPDX license identifiers client-side
+- Display licenses in a data table with search and filter
+- Use atomic design pattern:
+  - Molecules: LicenseForm, LicenseSearchBar components
+  - Organisms: LicenseTable, LicenseManagementForm components
+  - Template: DashboardLayout template
+  - Page: LicenseManagementPage
+- Ensure WCAG AA compliance
+- Handle loading and error states
+- Provide confirmation dialogs for deactivation
+
+---
+
+### Story 9.3: License Allowlist Integration with License Check Agent
+
+As a system,
+I want the license check agent to use the license allowlist from the database,
+So that license validation uses the current approved licenses.
+
+**Acceptance Criteria:**
+
+**Given** License allowlist is configured in the database
+**When** License check agent runs
+**Then** License check agent queries the license allowlist from database
+**And** Only active licenses (is_active=true) are considered
+**And** License validation uses the current allowlist
+**And** License check results reflect allowlist status
+**And** Changes to allowlist are immediately available for new checks
+**And** License check agent handles allowlist query errors gracefully
+
+**Prerequisites:** Story 4.3, Story 9.1
+
+**Technical Notes:**
+- Update license check agent to query License Allowlist table
+- Filter by is_active=true
+- Cache allowlist in memory with TTL for performance (optional)
+- Handle database connection errors gracefully
+- Log allowlist queries for debugging
+- Ensure license check agent uses same database connection as other services
+
+---
+
+### Story 9.4: License Allowlist Initial Data and Seed Scripts
+
+As a developer,
+I want initial license allowlist data and seed scripts,
+So that the system starts with common approved licenses.
+
+**Acceptance Criteria:**
+
+**Given** I have the database set up
+**When** I run seed scripts
+**Then** Common licenses are added to allowlist:
+- MIT
+- Apache-2.0
+- ISC
+- BSD-2-Clause
+- BSD-3-Clause
+- (Other common open-source licenses)
+
+**And** Seed scripts can be run independently
+**And** Seed scripts are idempotent (can be run multiple times safely)
+**And** Seed scripts are documented
+
+**Prerequisites:** Story 1.3, Story 9.1
+
+**Technical Notes:**
+- Create Alembic seed script or standalone Python script
+- Include common open-source licenses
+- Use proper SPDX identifiers
+- Make scripts idempotent (check if license exists before inserting)
+- Document how to run seed scripts
+- Include seed scripts in development setup documentation
+
+---
+
 ## Summary
 
-**Total Epics:** 8
-**Total Stories:** 47
+**Total Epics:** 9
+**Total Stories:** 51
 
 **Epic Breakdown:**
 - **Epic 1:** Foundation & Infrastructure - 8 stories
@@ -1334,6 +1493,7 @@ So that tests serve as living documentation and ensure quality.
 - **Epic 6:** Package Tracking & Lock-Down - 4 stories
 - **Epic 7:** External Integrations - 3 stories
 - **Epic 8:** Frontend Application - 7 stories
+- **Epic 9:** License Management - 4 stories
 
 **Story Characteristics:**
 - All stories are vertically sliced (complete functionality)
@@ -1351,6 +1511,7 @@ So that tests serve as living documentation and ensure quality.
 - ✅ Each dependency becomes a separate package request
 - ✅ Core package management features are complete
 - ✅ Frontend provides comprehensive UI for all features
+- ✅ License allowlist management provides full CRUD operations for administrators
 
 **Important Workflow Note:**
 - Users submit package-lock.json files from consuming projects

@@ -148,6 +148,12 @@ Airlock is architected as a microservices-based, event-driven system using FastA
 **HTTP Client:** Axios
 - Version: Latest from npm (verified 2025-11-12)
 
+**Data Tables:** TanStack Material React Table (MRT)
+- Version: Latest from npm (verified 2025-11-12)
+- Built on Material UI with TanStack Table
+- Provides inline filtering, virtualization, pagination, sorting, row selection, export
+- Accessibility features built-in
+
 **Testing:**
 - Storybook: Latest from npm (verified 2025-11-12) - Component testing
 - Cucumber.js: Latest from npm (verified 2025-11-12) - BDD testing
