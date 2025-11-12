@@ -45,8 +45,8 @@ development_status:
   1-2-docker-compose-configuration-production-and-development: done
   1-3-postgresql-database-setup-and-schema-foundation: done
   1-4-rabbitmq-message-broker-setup: done
-  1-5-core-fastapi-service-scaffolding: in-progress
-  1-6-frontend-react-application-setup: backlog
+  1-5-core-fastapi-service-scaffolding: done
+  1-6-frontend-react-application-setup: done
   1-7-mock-oauth-service-for-development: backlog
   1-8-shared-libraries-and-common-utilities: backlog
   epic-1-retrospective: optional
