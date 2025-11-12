@@ -47,7 +47,7 @@ development_status:
   1-4-rabbitmq-message-broker-setup: done
   1-5-core-fastapi-service-scaffolding: done
   1-6-frontend-react-application-setup: done
-  1-7-mock-oauth-service-for-development: backlog
+  1-7-mock-oauth-service-for-development: done
   1-8-shared-libraries-and-common-utilities: backlog
   epic-1-retrospective: optional
 
