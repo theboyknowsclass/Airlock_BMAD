@@ -6,6 +6,12 @@ from .auth import (
     get_current_user,
     get_optional_user,
     security,
+    require_role,
+    require_any_role,
+    require_all_roles,
+    require_submitter,
+    require_reviewer,
+    require_admin,
 )
 
 __all__ = [
@@ -13,4 +19,10 @@ __all__ = [
     "get_current_user",
     "get_optional_user",
     "security",
+    "require_role",
+    "require_any_role",
+    "require_all_roles",
+    "require_submitter",
+    "require_reviewer",
+    "require_admin",
 ]

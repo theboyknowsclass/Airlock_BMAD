@@ -18,7 +18,8 @@ persona:
 critical_actions: []
 
 # Add persistent memories for the agent
-memories: []
+memories:
+  - "Always write tests in BDD format using Gherkin feature files (pytest-bdd). Follow the pattern in services/auth-service/features/ with .feature files and step definitions in features/steps/"
 # Example:
 # memories:
 #   - "User prefers detailed technical explanations"

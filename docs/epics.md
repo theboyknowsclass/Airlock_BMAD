@@ -11,6 +11,13 @@
 
 This document provides the complete epic and story breakdown for Airlock, decomposing the requirements from the [PRD](./PRD.md) into implementable stories organized by value-delivering epics.
 
+**Testing Requirements:**
+- **BDD Testing (Behavior-Driven Development)**: All stories must include BDD tests using Gherkin feature files
+  - Backend services: Use pytest-bdd with feature files in `services/{service-name}/features/*.feature` and step definitions in `services/{service-name}/features/steps/*_steps.py`
+  - Frontend: Use Cucumber.js with feature files and step definitions (see Story 8.7 for details)
+  - Follow the pattern established in `services/auth-service/features/` (e.g., `rbac.feature`, `jwt_token_validation.feature`)
+  - Tests serve as living documentation and must cover all acceptance criteria
+
 **Epic Structure:**
 1. **Foundation & Infrastructure** - Establish project foundation and core infrastructure
 2. **Authentication & Authorization** - Secure access control system
@@ -425,6 +432,7 @@ So that users can only access resources appropriate for their role.
 - Define role permissions for each endpoint
 - Implement role checking logic
 - Use FastAPI dependencies for role enforcement
+- **BDD Tests**: Implement BDD tests using pytest-bdd (see `services/auth-service/features/rbac.feature` for reference)
 
 ---
 
@@ -1499,7 +1507,8 @@ So that the system starts with common approved licenses.
 - All stories are vertically sliced (complete functionality)
 - Stories are sequentially ordered (no forward dependencies)
 - Stories are sized for single-session completion
-- All stories include BDD-style acceptance criteria
+- All stories include BDD-style acceptance criteria (Given/When/Then format)
+- **All stories must include BDD test implementation** (Gherkin feature files with step definitions)
 - Technical notes provide implementation guidance
 
 **Coverage:**

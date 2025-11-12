@@ -10,6 +10,14 @@ from ..utils.jwt import decode_token
 from ..config import settings
 import logging
 
+try:
+    from airlock_common.constants.roles import ROLE_SUBMITTER, ROLE_REVIEWER, ROLE_ADMIN
+except ImportError:
+    # Fallback if shared library is not available
+    ROLE_SUBMITTER = "submitter"
+    ROLE_REVIEWER = "reviewer"
+    ROLE_ADMIN = "admin"
+
 logger = logging.getLogger(__name__)
 
 # HTTP Bearer token security scheme
@@ -156,4 +164,223 @@ async def get_optional_user(
         return await get_current_user(credentials)
     except HTTPException:
         return None
+
+
+def require_role(required_role: str):
+    """
+    FastAPI dependency factory to require a specific role
+    
+    Creates a dependency that checks if the user has the required role.
+    Raises 403 Forbidden if the user doesn't have the role.
+    
+    Args:
+        required_role: The role that is required (e.g., "submitter", "reviewer", "admin")
+    
+    Returns:
+        Dependency function that validates role and returns UserContext
+    
+    Example:
+        @router.get("/submission")
+        async def submission_endpoint(
+            user: UserContext = Depends(require_role("submitter"))
+        ):
+            ...
+    """
+    async def role_checker(
+        current_user: UserContext = Depends(get_current_user),
+    ) -> UserContext:
+        """
+        Check if user has the required role
+        
+        Args:
+            current_user: User context from authentication
+        
+        Returns:
+            UserContext if user has required role
+        
+        Raises:
+            HTTPException: 403 Forbidden if user doesn't have required role
+        """
+        user_roles = current_user.roles or []
+        
+        # Admins can access all endpoints
+        if ROLE_ADMIN in user_roles:
+            logger.debug(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"has admin role, granting access to endpoint requiring role '{required_role}'"
+            )
+            return current_user
+        
+        if required_role not in user_roles:
+            logger.warning(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"attempted to access endpoint requiring role '{required_role}'. "
+                f"User has roles: {user_roles}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required role: {required_role}",
+            )
+        
+        logger.debug(
+            f"User {current_user.user_id} ({current_user.username}) "
+            f"has required role '{required_role}'"
+        )
+        return current_user
+    
+    return role_checker
+
+
+def require_any_role(*required_roles: str):
+    """
+    FastAPI dependency factory to require at least one of the specified roles
+    
+    Creates a dependency that checks if the user has at least one of the required roles.
+    Raises 403 Forbidden if the user doesn't have any of the roles.
+    
+    Args:
+        *required_roles: One or more roles that are acceptable
+    
+    Returns:
+        Dependency function that validates role and returns UserContext
+    
+    Example:
+        @router.get("/workflow")
+        async def workflow_endpoint(
+            user: UserContext = Depends(require_any_role("reviewer", "admin"))
+        ):
+            ...
+    """
+    async def role_checker(
+        current_user: UserContext = Depends(get_current_user),
+    ) -> UserContext:
+        """
+        Check if user has at least one of the required roles
+        
+        Args:
+            current_user: User context from authentication
+        
+        Returns:
+            UserContext if user has at least one required role
+        
+        Raises:
+            HTTPException: 403 Forbidden if user doesn't have any required role
+        """
+        user_roles = current_user.roles or []
+        
+        # Admins can access all endpoints
+        if ROLE_ADMIN in user_roles:
+            logger.debug(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"has admin role, granting access to endpoint requiring one of roles {required_roles}"
+            )
+            return current_user
+        
+        required_roles_set = set(required_roles)
+        user_roles_set = set(user_roles)
+        
+        if not required_roles_set.intersection(user_roles_set):
+            logger.warning(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"attempted to access endpoint requiring one of roles {required_roles}. "
+                f"User has roles: {user_roles}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required one of roles: {', '.join(required_roles)}",
+            )
+        
+        logger.debug(
+            f"User {current_user.user_id} ({current_user.username}) "
+            f"has at least one required role from {required_roles}"
+        )
+        return current_user
+    
+    return role_checker
+
+
+def require_all_roles(*required_roles: str):
+    """
+    FastAPI dependency factory to require all of the specified roles
+    
+    Creates a dependency that checks if the user has all of the required roles.
+    Raises 403 Forbidden if the user doesn't have all roles.
+    
+    Args:
+        *required_roles: One or more roles that are all required
+    
+    Returns:
+        Dependency function that validates role and returns UserContext
+    
+    Example:
+        @router.get("/admin-only")
+        async def admin_endpoint(
+            user: UserContext = Depends(require_all_roles("admin", "reviewer"))
+        ):
+            ...
+    """
+    async def role_checker(
+        current_user: UserContext = Depends(get_current_user),
+    ) -> UserContext:
+        """
+        Check if user has all of the required roles
+        
+        Args:
+            current_user: User context from authentication
+        
+        Returns:
+            UserContext if user has all required roles
+        
+        Raises:
+            HTTPException: 403 Forbidden if user doesn't have all required roles
+        """
+        user_roles = current_user.roles or []
+        
+        # Admins can access all endpoints
+        if ROLE_ADMIN in user_roles:
+            logger.debug(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"has admin role, granting access to endpoint requiring all roles {required_roles}"
+            )
+            return current_user
+        
+        required_roles_set = set(required_roles)
+        user_roles_set = set(user_roles)
+        
+        if not required_roles_set.issubset(user_roles_set):
+            missing_roles = required_roles_set - user_roles_set
+            logger.warning(
+                f"User {current_user.user_id} ({current_user.username}) "
+                f"attempted to access endpoint requiring all roles {required_roles}. "
+                f"User has roles: {user_roles}. Missing: {missing_roles}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required all roles: {', '.join(required_roles)}. "
+                       f"Missing: {', '.join(missing_roles)}",
+            )
+        
+        logger.debug(
+            f"User {current_user.user_id} ({current_user.username}) "
+            f"has all required roles: {required_roles}"
+        )
+        return current_user
+    
+    return role_checker
+
+
+# Convenience functions for common role requirements
+def require_submitter():
+    """Convenience function to require submitter role"""
+    return require_role(ROLE_SUBMITTER)
+
+
+def require_reviewer():
+    """Convenience function to require reviewer role"""
+    return require_role(ROLE_REVIEWER)
+
+
+def require_admin():
+    """Convenience function to require admin role"""
+    return require_role(ROLE_ADMIN)
 
