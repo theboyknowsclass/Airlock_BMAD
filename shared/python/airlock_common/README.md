@@ -75,6 +75,104 @@ async with db.get_session() as session:
     # ...
 ```
 
+## Utility Functions
+
+This package provides utility functions for common operations:
+
+### Logging
+
+```python
+from airlock_common import setup_logging, get_logger
+
+# Setup logging
+setup_logging(log_level="INFO")
+
+# Get logger
+logger = get_logger(__name__)
+logger.info("Hello, world!")
+```
+
+### Error Handling
+
+```python
+from airlock_common import (
+    AirlockError,
+    ValidationError,
+    NotFoundError,
+    UnauthorizedError,
+    ForbiddenError,
+    ConflictError,
+    ServiceUnavailableError,
+)
+
+# Raise custom error
+raise ValidationError("Invalid input", details={"field": "email"})
+```
+
+### Validation
+
+```python
+from airlock_common import validate_email, validate_url, validate_uuid
+
+# Validate email
+if validate_email(email):
+    # Process email
+    pass
+
+# Validate URL
+if validate_url(url):
+    # Process URL
+    pass
+
+# Validate UUID
+if validate_uuid(uuid_string):
+    # Process UUID
+    pass
+```
+
+### Configuration Helpers
+
+```python
+from airlock_common import get_env, get_env_int, get_env_bool, get_env_list
+
+# Get environment variable
+database_url = get_env("DATABASE_URL", default="localhost")
+
+# Get environment variable as integer
+port = get_env_int("PORT", default=8000)
+
+# Get environment variable as boolean
+debug = get_env_bool("DEBUG", default=False)
+
+# Get environment variable as list
+allowed_origins = get_env_list("ALLOWED_ORIGINS", default=["*"])
+```
+
+## Constants
+
+This package provides constants for API endpoints, status codes, and error codes:
+
+```python
+from airlock_common import (
+    API_VERSION,
+    API_PREFIX,
+    HEALTH_ENDPOINT,
+    HTTP_STATUS_OK,
+    HTTP_STATUS_NOT_FOUND,
+    ERROR_CODE_VALIDATION_ERROR,
+    ROLE_SUBMITTER,
+    ROLE_REVIEWER,
+    ROLE_ADMIN,
+    ROLES,
+)
+
+# Use constants
+health_url = f"{API_PREFIX}{HEALTH_ENDPOINT}"
+if status_code == HTTP_STATUS_OK:
+    # Process success
+    pass
+```
+
 ## Requirements
 
 - Python >= 3.11

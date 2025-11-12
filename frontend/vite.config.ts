@@ -16,6 +16,7 @@ export default defineConfig({
       '@/types': path.resolve(__dirname, './src/types'),
       '@/hooks': path.resolve(__dirname, './src/hooks'),
       '@/config': path.resolve(__dirname, './src/config'),
+      '@/shared': path.resolve(__dirname, '../shared/types'),
     },
   },
   server: {

@@ -1,7 +1,36 @@
 /**
  * Airlock Shared TypeScript Types
- * Placeholder - will be implemented in Story 1.8
+ * Main export file for shared types
  */
 
-export {};
+// API Contract Types
+export * from "./api";
 
+// Re-export commonly used types
+export type {
+  ApiError,
+  ApiResponse,
+  PaginationParams,
+  PaginationMeta,
+  HealthResponse,
+  UserRole,
+  User,
+  PackageSubmission,
+  PackageRequest,
+  Package,
+  Workflow,
+  CheckResult,
+  AuditLog,
+  ApiKey,
+  PackageUsage,
+  LicenseAllowlist,
+} from "./api";
+
+// Re-export constants
+export {
+  HTTP_STATUS,
+  ERROR_CODE,
+  USER_ROLE,
+  API_VERSION,
+  API_PREFIX,
+} from "./api";
