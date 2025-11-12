@@ -1,0 +1,114 @@
+# Sprint Status Template
+# This tracks progress through Phase 4 implementation
+# Phase 0-3 (Discovery, Planning, Solutioning) are tracked separately in bmm-workflow-status.yaml
+
+# generated: 2025-11-12 11:49
+# project: Airlock
+# project_key: Airlock
+# tracking_system: file-system
+# story_location: "{project-root}/docs/stories"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder by *create-story
+#   - ready-for-dev: Draft approved and story context created by *story-ready
+#   - in-progress: Developer actively working on implementation by *dev-story
+#   - review: Implementation complete, ready for review by *code-review
+#   - done: Story completed by *story-done
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done by *retrospective
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', dev reviews, then Dev moves to 'done'
+
+generated: "2025-11-12 11:49"
+project: "Airlock"
+project_key: "Airlock"
+tracking_system: "file-system"
+story_location: "{project-root}/docs/stories"
+
+development_status:
+  # Epic 1: Foundation & Infrastructure
+  epic-1: backlog
+  1-1-project-structure-and-repository-setup: backlog
+  1-2-docker-compose-configuration-production-and-development: backlog
+  1-3-postgresql-database-setup-and-schema-foundation: backlog
+  1-4-rabbitmq-message-broker-setup: backlog
+  1-5-core-fastapi-service-scaffolding: backlog
+  1-6-frontend-react-application-setup: backlog
+  1-7-mock-oauth-service-for-development: backlog
+  1-8-shared-libraries-and-common-utilities: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Authentication & Authorization
+  epic-2: backlog
+  2-1-authentication-service-oauth2-integration-with-adfs: backlog
+  2-2-jwt-token-validation-and-user-context-extraction: backlog
+  2-3-role-based-access-control-rbac-implementation: backlog
+  2-4-user-management-service-user-profiles-and-roles: backlog
+  2-5-api-key-service-key-generation-and-management: backlog
+  2-6-api-key-authentication-and-token-issuance: backlog
+  2-7-api-gateway-token-validation-and-request-routing: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Package Request Submission & Processing
+  epic-3: backlog
+  3-1-package-request-submission-service-accept-package-lock-json-submissions: backlog
+  3-2-package-lock-json-processing-and-dependency-extraction: backlog
+  3-3-package-request-creation-from-dependencies: backlog
+  3-4-package-request-event-publishing: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Automated Security Checks Framework
+  epic-4: backlog
+  4-1-extensible-checks-framework-architecture: backlog
+  4-2-trivy-scanner-agent-implementation: backlog
+  4-3-license-check-agent-implementation: backlog
+  4-4-check-configuration-management: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Approval Workflow System
+  epic-5: backlog
+  5-1-workflow-service-workflow-state-management: backlog
+  5-2-event-driven-workflow-orchestration: backlog
+  5-3-manual-review-interface-and-approval-rejection: backlog
+  5-4-workflow-notification-system: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Package Tracking & Lock-Down
+  epic-6: backlog
+  6-1-package-tracking-service-usage-tracking: backlog
+  6-2-package-lock-down-mechanism: backlog
+  6-3-upgrade-request-workflow: backlog
+  6-4-package-tracking-dashboard: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: External Integrations
+  epic-7: backlog
+  7-1-artifact-storage-integration-service: backlog
+  7-2-npm-registry-integration-service: backlog
+  7-3-storage-and-registry-configuration-management: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: Frontend Application
+  epic-8: backlog
+  8-1-frontend-authentication-and-routing: backlog
+  8-2-package-request-submission-ui: backlog
+  8-3-approval-workflow-ui: backlog
+  8-4-package-tracking-dashboard-ui: backlog
+  8-5-admin-configuration-ui: backlog
+  8-6-frontend-accessibility-compliance-and-testing: backlog
+  8-7-frontend-bdd-testing-implementation: backlog
+  epic-8-retrospective: optional
+
