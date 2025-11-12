@@ -1,0 +1,5 @@
+# Placeholder requirements.txt for api-gateway service
+# TODO: Add actual dependencies in Story 1.5
+fastapi==0.115.0
+uvicorn[standard]
+
