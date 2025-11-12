@@ -48,7 +48,7 @@ development_status:
   1-5-core-fastapi-service-scaffolding: done
   1-6-frontend-react-application-setup: done
   1-7-mock-oauth-service-for-development: done
-  1-8-shared-libraries-and-common-utilities: backlog
+  1-8-shared-libraries-and-common-utilities: done
   epic-1-retrospective: optional
 
   # Epic 2: Authentication & Authorization
@@ -111,4 +111,3 @@ development_status:
   8-6-frontend-accessibility-compliance-and-testing: backlog
   8-7-frontend-bdd-testing-implementation: backlog
   epic-8-retrospective: optional
-
