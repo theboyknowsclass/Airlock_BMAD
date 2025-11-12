@@ -87,6 +87,11 @@ services:
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL}
 
+  # PostgreSQL - expose port for testing and local development
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
   # RabbitMQ - expose management UI in development (override to add port mapping)
   rabbitmq:
     ports:
