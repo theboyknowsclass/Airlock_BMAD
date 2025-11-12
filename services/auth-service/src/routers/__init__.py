@@ -1,6 +1,6 @@
 """
 Authentication Service routers
 """
-from . import health
+from . import health, auth
 
-__all__ = ["health"]
+__all__ = ["health", "auth"]
