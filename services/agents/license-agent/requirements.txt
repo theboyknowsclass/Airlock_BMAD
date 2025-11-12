@@ -1,5 +1,7 @@
-# Placeholder requirements.txt for api-gateway service
-# TODO: Add actual dependencies in Story 1.5
+# License Check Agent Dependencies
 fastapi==0.115.0
-uvicorn[standard]
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+pydantic==2.10.4
+pydantic-settings==2.7.1
 

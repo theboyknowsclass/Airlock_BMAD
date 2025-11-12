@@ -1,0 +1,3 @@
+"""
+External artifact storage integration
+"""
