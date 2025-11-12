@@ -4,13 +4,14 @@ OAuth2 integration with ADFS and token issuance
 """
 import logging
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query, Request, Form
+from fastapi import APIRouter, HTTPException, Query, Request, Form, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
 from pydantic import BaseModel
 
 from ..services.oauth2 import oauth2_client
 from ..utils.jwt import create_access_token, create_refresh_token, decode_token
 from ..config import settings
+from ..dependencies import get_current_user, UserContext
 
 
 class UnauthorizedError(Exception):
@@ -239,5 +240,30 @@ async def logout():
     return JSONResponse(
         status_code=200,
         content={"message": "Logged out successfully"},
+    )
+
+
+class UserInfoResponse(BaseModel):
+    """User info response model"""
+    user_id: str
+    username: str
+    roles: list[str]
+    scope: Optional[str] = None
+
+
+@router.get("/me", response_model=UserInfoResponse)
+async def get_current_user_info(
+    current_user: UserContext = Depends(get_current_user),
+):
+    """
+    Get current user information
+    Protected endpoint that requires valid JWT token
+    Demonstrates usage of get_current_user dependency
+    """
+    return UserInfoResponse(
+        user_id=current_user.user_id,
+        username=current_user.username,
+        roles=current_user.roles,
+        scope=current_user.scope,
     )
 
