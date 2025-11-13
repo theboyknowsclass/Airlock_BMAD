@@ -11,7 +11,7 @@ from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../'))
 
 from pytest_bdd import given, when, then, parsers, scenario
 from src.dependencies.auth import (

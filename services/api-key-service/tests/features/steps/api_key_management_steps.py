@@ -14,14 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy import delete, select
 
 # Add src to path for imports
-api_key_service_src = os.path.join(os.path.dirname(__file__), '../../')
+api_key_service_src = os.path.join(os.path.dirname(__file__), '../../../')
 if api_key_service_src not in sys.path:
     sys.path.insert(0, api_key_service_src)
 
 # Add shared/python to path for airlock_common
 shared_python_path = os.path.join(
     os.path.dirname(__file__), 
-    '../../../..', 
+    '../../../../..', 
     'shared', 
     'python'
 )

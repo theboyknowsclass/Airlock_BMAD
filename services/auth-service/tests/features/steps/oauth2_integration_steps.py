@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 from jose import jwt
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../'))
 
 from pytest_bdd import given, when, then, parsers, scenario
 from src.utils.jwt import create_refresh_token, decode_token
