@@ -1,0 +1,111 @@
+---
+description: Development Principles - Clean Code, SOLID, DRY
+globs:
+alwaysApply: true
+---
+
+# Development Principles
+
+## Core Principles
+
+### Clean Code
+- **No unnecessary abstractions**: Avoid wrapper functions or helper classes that don't add value. If a function just calls another function with the same parameters, remove it.
+- **Direct imports**: Import directly from shared libraries rather than creating thin wrappers.
+- **Explicit over implicit**: Prefer explicit code that shows what's happening over hidden abstractions.
+- **Remove duplication**: Even if it means refactoring, eliminate duplicate code.
+
+### SOLID Principles
+- **Single Responsibility**: Each class/function should have one reason to change.
+- **Open/Closed**: Open for extension, closed for modification.
+- **Liskov Substitution**: Derived classes must be substitutable for their base classes.
+- **Interface Segregation**: Many specific interfaces are better than one general-purpose interface.
+- **Dependency Inversion**: Depend on abstractions, not concretions.
+
+### DRY (Don't Repeat Yourself)
+- **Shared utilities**: Common functionality belongs in shared libraries.
+- **No wrappers without value**: Don't create wrapper functions that just pass parameters through.
+- **Consolidate tests**: BDD tests for shared code should be in the shared library, not duplicated in services.
+
+## Code Quality Standards
+
+1. **Refactor aggressively**: If code can be cleaner, refactor it. Don't accumulate technical debt.
+2. **Question abstractions**: If a wrapper doesn't add value, remove it.
+3. **Test shared code once**: Shared utilities should have comprehensive tests in the shared library.
+4. **Import directly**: Use shared libraries directly rather than creating service-specific wrappers.
+
+## Examples
+
+### ❌ Bad: Unnecessary Wrapper
+```python
+# services/auth-service/src/utils/jwt.py
+def get_jwt_config() -> JWTConfig:
+    return JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        # ...
+    )
+```
+
+### ✅ Good: Direct Usage
+```python
+# services/auth-service/src/routers/auth.py
+from airlock_common import JWTConfig
+from ..config import settings
+
+jwt_config = JWTConfig(
+    secret_key=settings.JWT_SECRET_KEY,
+    algorithm=settings.JWT_ALGORITHM,
+    # ...
+)
+```
+
+### ❌ Bad: Duplicate Tests
+- JWT utility tests in each service
+- Same test logic repeated 3 times
+
+### ✅ Good: Shared Tests
+- BDD tests for JWT utilities in `shared/python/airlock_common/tests/`
+- Services only test their integration, not the utilities themselves
+
+## Requirements File Organization
+
+### Separate Production and Test Dependencies
+- **requirements.txt**: Contains only production/runtime dependencies
+- **requirements-test.txt**: Contains testing dependencies (pytest, pytest-bdd, etc.)
+- **Benefits**:
+  - Clear separation of concerns
+  - Production deployments don't need test dependencies
+  - Easier to understand what's needed for what purpose
+  - Follows Python packaging best practices
+
+### Installation Patterns
+```bash
+# Install production dependencies only
+pip install -r requirements.txt
+
+# Install test dependencies (assumes requirements.txt already installed)
+pip install -r requirements-test.txt
+
+# Install both at once
+pip install -r requirements.txt -r requirements-test.txt
+```
+
+### ❌ Bad: Mixed Dependencies
+```txt
+# requirements.txt
+fastapi==0.115.0
+pytest==8.3.4  # Test dependency mixed with production
+pytest-bdd==7.1.1  # Test dependency mixed with production
+```
+
+### ✅ Good: Separated Dependencies
+```txt
+# requirements.txt (production)
+fastapi==0.115.0
+uvicorn[standard]==0.32.1
+
+# requirements-test.txt (testing)
+pytest==8.3.4
+pytest-bdd==7.1.1
+pytest-cov==6.0.0
+```

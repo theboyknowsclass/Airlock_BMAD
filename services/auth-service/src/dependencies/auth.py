@@ -4,9 +4,9 @@ FastAPI dependencies for authentication and authorization
 from typing import Optional, List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError
+from jwt import InvalidTokenError, DecodeError, ExpiredSignatureError
 
-from ..utils.jwt import decode_token
+from airlock_common import JWTConfig, decode_token
 from ..config import settings
 import logging
 
@@ -74,7 +74,14 @@ async def get_current_user(
     
     try:
         # Decode and validate token (signature and expiration are checked)
-        token_data = decode_token(token)
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
+        token_data = decode_token(token, jwt_config)
         
         # Verify token type is access token (not refresh token)
         token_type = token_data.get("type")
@@ -124,7 +131,7 @@ async def get_current_user(
     except HTTPException:
         # Re-raise HTTPException to preserve specific error messages
         raise
-    except JWTError as e:
+    except (InvalidTokenError, DecodeError, ExpiredSignatureError) as e:
         logger.warning(f"Token validation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

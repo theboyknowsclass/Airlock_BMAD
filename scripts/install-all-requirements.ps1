@@ -56,25 +56,34 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[OK] Pip upgraded" -ForegroundColor Green
 Write-Host ""
 
-# Find all requirements.txt files
+# Find all requirements.txt and requirements-test.txt files
 $ServicesDir = Join-Path $ProjectRoot "services"
 $RequirementsFiles = @()
 
-# Find requirements.txt in services
+# Find requirements.txt in services (production dependencies)
 if (Test-Path $ServicesDir) {
     $RequirementsFiles += Get-ChildItem -Path $ServicesDir -Filter "requirements.txt" -Recurse -File
 }
 
-# Find requirements.txt in shared/python/airlock_common
+# Find requirements-test.txt in services (testing dependencies)
+if (Test-Path $ServicesDir) {
+    $RequirementsFiles += Get-ChildItem -Path $ServicesDir -Filter "requirements-test.txt" -Recurse -File
+}
+
+# Find requirements.txt and requirements-test.txt in shared/python/airlock_common
 $SharedDir = Join-Path $ProjectRoot "shared\python\airlock_common"
 if (Test-Path $SharedDir) {
     $SharedRequirements = Join-Path $SharedDir "requirements.txt"
     if (Test-Path $SharedRequirements) {
         $RequirementsFiles += Get-Item $SharedRequirements
     }
+    $SharedTestRequirements = Join-Path $SharedDir "requirements-test.txt"
+    if (Test-Path $SharedTestRequirements) {
+        $RequirementsFiles += Get-Item $SharedTestRequirements
+    }
 }
 
-Write-Host "Found $($RequirementsFiles.Count) requirements.txt files:" -ForegroundColor Green
+Write-Host "Found $($RequirementsFiles.Count) requirements files:" -ForegroundColor Green
 foreach ($reqFile in $RequirementsFiles) {
     $relativePath = $reqFile.FullName.Replace($ProjectRoot, "").TrimStart("\")
     Write-Host "  - $relativePath" -ForegroundColor Gray
@@ -87,12 +96,22 @@ foreach ($reqFile in $RequirementsFiles) {
     $relativePath = $reqFile.FullName.Replace($ProjectRoot, "").TrimStart("\")
     Write-Host "Installing from $relativePath..." -ForegroundColor Yellow
     
-    python -m pip install -r $reqFile.FullName --quiet
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "[OK] Installed from $relativePath" -ForegroundColor Green
-    } else {
-        Write-Host "[ERROR] Failed to install from $relativePath" -ForegroundColor Red
-        $FailedFiles += $relativePath
+    # Change to the directory containing the requirements.txt file
+    # This ensures relative paths (like -e ../../shared/python/airlock_common) resolve correctly
+    $reqFileDir = Split-Path -Parent $reqFile.FullName
+    Push-Location $reqFileDir
+    
+    try {
+        python -m pip install -r $reqFile.FullName --quiet
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "[OK] Installed from $relativePath" -ForegroundColor Green
+        } else {
+            Write-Host "[ERROR] Failed to install from $relativePath" -ForegroundColor Red
+            $FailedFiles += $relativePath
+        }
+    }
+    finally {
+        Pop-Location
     }
 }
 

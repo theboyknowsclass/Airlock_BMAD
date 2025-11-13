@@ -47,7 +47,7 @@ try:
     from config import settings as auth_settings
 except ImportError:
     # Fallback: create minimal JWT token creation for testing
-    from jose import jwt
+    import jwt
     import os
     
     class AuthSettings:
@@ -59,8 +59,8 @@ except ImportError:
     
     def create_access_token(user_id: str, username: str, roles: list):
         """Create access token for testing"""
-        from datetime import datetime, timedelta
-        now = datetime.utcnow()
+        from datetime import datetime, timedelta, UTC
+        now = datetime.now(UTC)
         exp = now + timedelta(minutes=15)
         claims = {
             "sub": user_id,
@@ -187,7 +187,7 @@ async def client(db_session, context):
         user_info = test_context.get("user_info", {})
         if not user_info:
             # Decode token to get user info
-            from jose import jwt
+            import jwt
             try:
                 claims = jwt.decode(
                     token, 

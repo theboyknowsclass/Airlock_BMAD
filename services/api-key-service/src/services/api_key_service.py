@@ -6,7 +6,7 @@ import bcrypt
 import json
 import logging
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
@@ -106,7 +106,7 @@ class APIKeyService:
         # Calculate expiration
         expires_at = None
         if expires_in_days:
-            expires_at = datetime.utcnow() + timedelta(days=expires_in_days)
+            expires_at = datetime.now(UTC) + timedelta(days=expires_in_days)
         
         # Create API key record
         api_key = APIKey(
@@ -246,7 +246,7 @@ class APIKeyService:
             permissions = json.loads(old_key.permissions)
         if expires_in_days is None and old_key.expires_at:
             # Calculate days until expiration
-            days_until_expiry = (old_key.expires_at - datetime.utcnow()).days
+            days_until_expiry = (old_key.expires_at - datetime.now(UTC)).days
             expires_in_days = max(1, days_until_expiry) if days_until_expiry > 0 else None
         
         # Revoke old key
@@ -276,7 +276,7 @@ class APIKeyService:
         if api_key.expires_at is None:
             return False
         
-        return datetime.utcnow() > api_key.expires_at
+        return datetime.now(UTC) > api_key.expires_at
     
     def is_key_valid(self, api_key: APIKey) -> bool:
         """

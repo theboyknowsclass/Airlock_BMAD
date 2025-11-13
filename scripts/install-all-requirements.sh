@@ -45,17 +45,21 @@ echo ""
 # Find all requirements.txt files
 REQUIREMENTS_FILES=()
 
-# Find requirements.txt in services
+# Find requirements.txt and requirements-test.txt in services
 if [ -d "$PROJECT_ROOT/services" ]; then
     while IFS= read -r -d '' file; do
         REQUIREMENTS_FILES+=("$file")
-    done < <(find "$PROJECT_ROOT/services" -name "requirements.txt" -type f -print0)
+    done < <(find "$PROJECT_ROOT/services" -name "requirements*.txt" -type f -print0)
 fi
 
-# Find requirements.txt in shared/python/airlock_common
+# Find requirements.txt and requirements-test.txt in shared/python/airlock_common
 SHARED_REQUIREMENTS="$PROJECT_ROOT/shared/python/airlock_common/requirements.txt"
 if [ -f "$SHARED_REQUIREMENTS" ]; then
     REQUIREMENTS_FILES+=("$SHARED_REQUIREMENTS")
+fi
+SHARED_TEST_REQUIREMENTS="$PROJECT_ROOT/shared/python/airlock_common/requirements-test.txt"
+if [ -f "$SHARED_TEST_REQUIREMENTS" ]; then
+    REQUIREMENTS_FILES+=("$SHARED_TEST_REQUIREMENTS")
 fi
 
 echo "Found ${#REQUIREMENTS_FILES[@]} requirements.txt files:"
@@ -71,12 +75,20 @@ for req_file in "${REQUIREMENTS_FILES[@]}"; do
     RELATIVE_PATH="${req_file#$PROJECT_ROOT/}"
     echo "Installing from $RELATIVE_PATH..."
     
+    # Change to the directory containing the requirements file
+    # This ensures relative paths (like -e ../../shared/python/airlock_common) resolve correctly
+    REQ_FILE_DIR="$(dirname "$req_file")"
+    cd "$REQ_FILE_DIR"
+    
     if pip install -r "$req_file" --quiet; then
         echo "[OK] Installed from $RELATIVE_PATH"
     else
         echo "[ERROR] Failed to install from $RELATIVE_PATH"
         FAILED_FILES+=("$RELATIVE_PATH")
     fi
+    
+    # Return to project root
+    cd "$PROJECT_ROOT"
 done
 
 echo ""

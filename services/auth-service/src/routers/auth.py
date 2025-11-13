@@ -9,9 +9,9 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from pydantic import BaseModel
 
 from ..services.oauth2 import oauth2_client
-from ..utils.jwt import create_access_token, create_refresh_token, decode_token
 from ..config import settings
 from ..dependencies import get_current_user, UserContext
+from airlock_common import JWTConfig, create_user_access_token, create_user_refresh_token, decode_token
 
 
 class UnauthorizedError(Exception):
@@ -111,13 +111,22 @@ async def callback(
             username = user_id
         
         # Issue JWT tokens (access token and refresh token)
-        access_token = create_access_token(
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
+        access_token = create_user_access_token(
+            config=jwt_config,
             user_id=user_id,
             username=username or user_id,
             roles=roles,
             scope=token_response.get("scope"),
         )
-        refresh_token = create_refresh_token(
+        refresh_token = create_user_refresh_token(
+            config=jwt_config,
             user_id=user_id,
             username=username,
             roles=roles,
@@ -172,7 +181,14 @@ async def token(
     
     try:
         # Decode and validate refresh token
-        token_data = decode_token(refresh_token)
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
+        token_data = decode_token(refresh_token, jwt_config)
         
         # Check token type
         if token_data.get("type") != "refresh":
@@ -190,13 +206,15 @@ async def token(
         username = token_data.get("username", user_id)
         
         # Create new tokens (token rotation)
-        access_token = create_access_token(
+        access_token = create_user_access_token(
+            config=jwt_config,
             user_id=user_id,
             username=username,
             roles=roles,
             scope=token_data.get("scope"),
         )
-        new_refresh_token = create_refresh_token(
+        new_refresh_token = create_user_refresh_token(
+            config=jwt_config,
             user_id=user_id,
             username=username,
             roles=roles,

@@ -2,7 +2,7 @@
 API Key request/response models
 """
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 
@@ -15,27 +15,25 @@ class APIKeyCreateRequest(BaseModel):
 
 class APIKeyResponse(BaseModel):
     """API key response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     scopes: List[str]
     permissions: List[str]
     created_at: datetime
     expires_at: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
 
 
 class APIKeyWithKeyResponse(BaseModel):
     """API key response model including the plain text key (only returned on creation/rotation)"""
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     key: str  # Plain text key (only shown once)
     scopes: List[str]
     permissions: List[str]
     created_at: datetime
     expires_at: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
 
 
 class APIKeyListResponse(BaseModel):
@@ -51,4 +49,12 @@ class APIKeyRotateRequest(BaseModel):
     scopes: Optional[List[str]] = Field(None, description="New scopes (if None, uses existing)")
     permissions: Optional[List[str]] = Field(None, description="New permissions (if None, uses existing)")
     expires_in_days: Optional[int] = Field(None, ge=1, description="New expiration in days (if None, uses existing)")
+
+
+class TokenResponse(BaseModel):
+    """Token response model"""
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+    expires_in: int  # Seconds until access token expires
 

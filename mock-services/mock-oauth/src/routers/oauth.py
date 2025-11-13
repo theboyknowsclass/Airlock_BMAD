@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from ..models.user import TestUser, get_user_by_username, get_user_by_id
 from ..models.auth_code import AuthCode, AuthCodeStore
-from ..utils.jwt import create_access_token, create_refresh_token, decode_token
+from airlock_common import JWTConfig, create_user_access_token, create_user_refresh_token, decode_token
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -173,14 +173,25 @@ async def token(
         auth_code_store.delete(code)
 
         # Create tokens
-        access_token = create_access_token(
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
+        access_token = create_user_access_token(
+            config=jwt_config,
             user_id=user.user_id,
             username=user.username,
             roles=user.roles,
             scope=auth_code.scope,
         )
-        refresh_token = create_refresh_token(
+        refresh_token = create_user_refresh_token(
+            config=jwt_config,
             user_id=user.user_id,
+            username=None,  # Mock OAuth doesn't include username in refresh token
+            roles=None,  # Mock OAuth doesn't include roles in refresh token
             scope=auth_code.scope,
         )
 
@@ -202,8 +213,15 @@ async def token(
             )
 
         # Decode and validate refresh token
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
         try:
-            token_data = decode_token(refresh_token)
+            token_data = decode_token(refresh_token, jwt_config)
         except Exception as e:
             logger.error(f"Failed to decode refresh token: {e}")
             raise HTTPException(
@@ -228,14 +246,18 @@ async def token(
             )
 
         # Create new tokens (token rotation)
-        access_token = create_access_token(
+        access_token = create_user_access_token(
+            config=jwt_config,
             user_id=user.user_id,
             username=user.username,
             roles=user.roles,
             scope=token_data.get("scope"),
         )
-        new_refresh_token = create_refresh_token(
+        new_refresh_token = create_user_refresh_token(
+            config=jwt_config,
             user_id=user.user_id,
+            username=None,  # Mock OAuth doesn't include username in refresh token
+            roles=None,  # Mock OAuth doesn't include roles in refresh token
             scope=token_data.get("scope"),
         )
 
@@ -281,7 +303,14 @@ async def userinfo(request: Request):
 
     # Decode and validate token
     try:
-        token_data = decode_token(token)
+        jwt_config = JWTConfig(
+            secret_key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+            issuer=settings.JWT_ISSUER,
+            access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+            refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+        )
+        token_data = decode_token(token, jwt_config)
     except Exception as e:
         logger.error(f"Failed to decode token: {e}")
         raise HTTPException(

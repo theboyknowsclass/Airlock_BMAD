@@ -3,21 +3,21 @@ Step definitions for JWT token validation feature
 """
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from typing import List, Optional
 
 import pytest
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
-from jose import jwt
+import jwt
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../'))
 
 from pytest_bdd import given, when, then, parsers, scenario
 from src.dependencies.auth import get_current_user, get_optional_user, UserContext
-from src.utils.jwt import create_access_token, create_refresh_token
+from airlock_common import JWTConfig, create_user_access_token, create_user_refresh_token
 from src.config import settings
 
 # Get feature file path
@@ -86,7 +86,15 @@ def jwt_secret_key_set(context):
 def valid_access_token_with_roles(context, user_id: str, username: str, roles: str):
     """Create a valid access token with specified user and roles"""
     roles_list = [r.strip() for r in roles.split(",")]
-    token = create_access_token(
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token = create_user_access_token(
+        config=jwt_config,
         user_id=user_id,
         username=username,
         roles=roles_list,
@@ -101,7 +109,7 @@ def valid_access_token_with_roles(context, user_id: str, username: str, roles: s
 def valid_access_token_without_roles(context, user_id: str):
     """Create a valid access token without roles"""
     # Create token without roles by manually encoding
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     exp_timestamp = int((now + timedelta(minutes=15)).timestamp())
     iat_timestamp = int(now.timestamp())
     
@@ -127,7 +135,15 @@ def valid_access_token_without_roles(context, user_id: str):
 @given(parsers.parse('I have a valid refresh token for user "{user_id}"'))
 def valid_refresh_token(context, user_id: str):
     """Create a valid refresh token"""
-    token = create_refresh_token(
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token = create_user_refresh_token(
+        config=jwt_config,
         user_id=user_id,
         username=user_id,
         roles=["submitter"],

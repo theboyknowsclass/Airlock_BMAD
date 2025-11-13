@@ -3,7 +3,7 @@ Step definitions for OAuth2 integration feature
 """
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from typing import Optional, Dict, Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -11,13 +11,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from jose import jwt
+import jwt
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../'))
 
 from pytest_bdd import given, when, then, parsers, scenario
-from src.utils.jwt import create_refresh_token, decode_token
+from airlock_common import JWTConfig, create_user_refresh_token, decode_token
 from src.config import settings
 
 # Get feature file path
@@ -146,7 +146,15 @@ def oauth2_provider_rejects_code(context, mock_oauth2_client):
 @given("I have a valid refresh token")
 def valid_refresh_token(context):
     """Create a valid refresh token"""
-    token = create_refresh_token(
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token = create_user_refresh_token(
+        config=jwt_config,
         user_id="user-123",
         username="testuser",
         roles=["submitter"],
@@ -361,11 +369,18 @@ def receive_access_token_with_expiry(context):
     assert "access_token=" in redirect_url, f"access_token not in redirect URL: {redirect_url}"
     # Extract token and verify expiry
     token_part = redirect_url.split("access_token=")[1].split("&")[0]
-    token_data = decode_token(token_part)
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token_data = decode_token(token_part, jwt_config)
     assert "exp" in token_data
     # Verify expiry is approximately 15 minutes from now
     exp_time = datetime.fromtimestamp(token_data["exp"])
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     expected_exp = now + timedelta(minutes=15)
     # Allow 1 minute tolerance
     assert abs((exp_time - expected_exp).total_seconds()) < 60
@@ -380,11 +395,18 @@ def receive_refresh_token_with_expiry(context):
     assert "refresh_token=" in redirect_url, f"refresh_token not in redirect URL: {redirect_url}"
     # Extract token and verify expiry
     token_part = redirect_url.split("refresh_token=")[1].split("&")[0]
-    token_data = decode_token(token_part)
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token_data = decode_token(token_part, jwt_config)
     assert "exp" in token_data
     # Verify expiry is approximately 7 days from now
     exp_time = datetime.fromtimestamp(token_data["exp"])
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     expected_exp = now + timedelta(days=7)
     # Allow 1 day tolerance
     assert abs((exp_time - expected_exp).total_seconds()) < 86400
@@ -398,7 +420,14 @@ def access_token_contains_claim(context, claim_type: str):
     redirect_url = response.headers.get("location", "")
     assert "access_token=" in redirect_url, f"access_token not in redirect URL: {redirect_url}"
     token_part = redirect_url.split("access_token=")[1].split("&")[0]
-    token_data = decode_token(token_part)
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token_data = decode_token(token_part, jwt_config)
     
     if claim_type == "user ID":
         assert "sub" in token_data
@@ -477,7 +506,14 @@ def new_access_token_contains_claim(context, claim_type: str):
     response = context["response"]
     data = response.json()
     token = data["access_token"]
-    token_data = decode_token(token)
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token_data = decode_token(token, jwt_config)
     
     if claim_type == "user ID":
         assert "sub" in token_data
@@ -554,7 +590,14 @@ def access_token_contains_default_role(context, role: str):
     redirect_url = response.headers.get("location", "")
     assert "access_token=" in redirect_url, f"access_token not in redirect URL: {redirect_url}"
     token_part = redirect_url.split("access_token=")[1].split("&")[0]
-    token_data = decode_token(token_part)
+    jwt_config = JWTConfig(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        issuer=settings.JWT_ISSUER,
+        access_token_expiry_minutes=settings.ACCESS_TOKEN_EXPIRY_MINUTES,
+        refresh_token_expiry_days=settings.REFRESH_TOKEN_EXPIRY_DAYS,
+    )
+    token_data = decode_token(token_part, jwt_config)
     assert "roles" in token_data
     assert role in token_data["roles"]
 

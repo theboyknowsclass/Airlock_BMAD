@@ -51,12 +51,12 @@ try:
     from utils.jwt import create_access_token
 except ImportError:
     # Fallback: create minimal JWT token creation for testing
-    from datetime import datetime, timedelta
-    from jose import jwt
+    from datetime import datetime, timedelta, UTC
+    import jwt
     
     def create_access_token(user_id: str, username: str, roles: list):
         """Create access token for testing"""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         exp = now + timedelta(minutes=15)
         claims = {
             "sub": user_id,
