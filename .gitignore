@@ -73,3 +73,6 @@ storybook-static/
 *.pyc
 *.pyo
 
+services/api-key-service/coverage.xml
+services/auth-service/coverage.xml
+services/user-service/coverage.xml
