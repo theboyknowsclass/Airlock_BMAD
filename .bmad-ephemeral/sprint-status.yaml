@@ -54,9 +54,9 @@ development_status:
   # Epic 2: Authentication & Authorization
   epic-2: backlog
   2-1-authentication-service-oauth2-integration-with-adfs: done
-  2-2-jwt-token-validation-and-user-context-extraction: backlog
-  2-3-role-based-access-control-rbac-implementation: backlog
-  2-4-user-management-service-user-profiles-and-roles: backlog
+  2-2-jwt-token-validation-and-user-context-extraction: done
+  2-3-role-based-access-control-rbac-implementation: done
+  2-4-user-management-service-user-profiles-and-roles: done
   2-5-api-key-service-key-generation-and-management: backlog
   2-6-api-key-authentication-and-token-issuance: backlog
   2-7-api-gateway-token-validation-and-request-routing: backlog
