@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Development configuration - overrides and additions ONLY
 # Usage: docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml --env-file .env.dev up
 # This file merges with docker-compose.prod.yml, adding/overriding development-specific settings only
@@ -11,7 +9,9 @@ services:
   
   api-gateway:
     volumes:
-      - ./services/api-gateway/src:/app/src
+      - ./services/api-gateway/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./services/api-gateway/conf.d:/usr/local/openresty/nginx/conf/conf.d:ro
+      - ./services/api-gateway/lua:/usr/local/openresty/nginx/lua:ro
 
   auth-service:
     volumes:
@@ -80,8 +80,8 @@ services:
   # Mock OAuth Service (development only - addition, not in prod)
   mock-oauth:
     build:
-      context: ./mock-services/mock-oauth
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./mock-services/mock-oauth/Dockerfile
     container_name: airlock-mock-oauth
     ports:
       - "${MOCK_OAUTH_PORT:-9000}:9000"

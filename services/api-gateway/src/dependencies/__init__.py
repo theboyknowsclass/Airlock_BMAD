@@ -1,4 +1,0 @@
-"""
-API Gateway FastAPI dependencies
-"""
-

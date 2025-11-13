@@ -1,4 +1,0 @@
-"""
-API Gateway business logic
-"""
-

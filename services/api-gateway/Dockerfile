@@ -1,41 +1,31 @@
-# Multi-stage build for API Gateway Service
-FROM python:3.12-slim as builder
+# OpenResty API Gateway
+FROM openresty/openresty:alpine-fat
 
-WORKDIR /app
+WORKDIR /usr/local/openresty/nginx
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Install lua-resty-jwt via opm (OpenResty Package Manager)
+RUN opm get cdbattags/lua-resty-jwt
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+# Copy configuration files
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY conf.d/ /usr/local/openresty/nginx/conf/conf.d/
+COPY lua/ /usr/local/openresty/nginx/lua/
 
-# Production stage
-FROM python:3.12-slim
-
-WORKDIR /app
-
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
-
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
-
-# Copy application code
-COPY src/ ./src/
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# Create nginx user and set permissions
+RUN addgroup -g 101 -S nginx && \
+    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx && \
+    chown -R nginx:nginx /usr/local/openresty/nginx
 
 # Expose port
-EXPOSE 8000
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
 
-# Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Create log directory
+RUN mkdir -p /var/log/nginx && \
+    chown -R nginx:nginx /var/log/nginx
+
+# Run OpenResty
+CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
