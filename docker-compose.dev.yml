@@ -113,6 +113,11 @@ services:
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      # Mount entrypoint script to auto-configure PostgreSQL server
+      - ./docker/pgadmin/entrypoint.sh:/custom-entrypoint.sh:ro
+      # Mount Python script to add server to database
+      - ./docker/pgadmin/setup_server.py:/setup_server.py:ro
+    entrypoint: ["/bin/bash", "/custom-entrypoint.sh"]
     depends_on:
       postgres:
         condition: service_healthy

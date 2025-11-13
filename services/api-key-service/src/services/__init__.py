@@ -1,3 +1,6 @@
 """
-API key generation, validation, and token issuance
+API Key Service services
 """
+from .api_key_service import APIKeyService
+
+__all__ = ["APIKeyService"]

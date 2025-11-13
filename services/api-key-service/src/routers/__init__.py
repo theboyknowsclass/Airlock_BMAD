@@ -1,6 +1,6 @@
 """
 api-key-service routers
 """
-from . import health
+from . import health, api_keys
 
-__all__ = ["health"]
+__all__ = ["health", "api_keys"]

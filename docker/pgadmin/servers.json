@@ -1,0 +1,21 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Airlock PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "airlock_dev",
+      "Username": "airlock_dev",
+      "Password": "dev_password_change_me",
+      "SSLMode": "prefer",
+      "Comment": "Airlock development database",
+      "PassFile": "",
+      "Tunnel": false,
+      "TunnelPort": "22",
+      "TunnelUser": "",
+      "TunnelAuthentication": 0
+    }
+  }
+}
+

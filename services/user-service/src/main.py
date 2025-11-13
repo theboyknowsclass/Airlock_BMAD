@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routers import health
+from .routers import health, users
 from .utils.logging import setup_logging
 
 # Setup logging
@@ -52,6 +52,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, tags=["health"])
+app.include_router(users.router)
 
 
 @app.exception_handler(Exception)

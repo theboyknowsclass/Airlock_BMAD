@@ -18,7 +18,7 @@ class PackageUsage(Base):
         nullable=False,
         index=True
     )
-    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
     
     # Relationships
